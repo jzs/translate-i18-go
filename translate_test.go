@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/jzs/translate"
+	translate "github.com/jzs/translate-i18-go"
 )
 
 type log struct {
