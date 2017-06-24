@@ -2,6 +2,7 @@ package translate_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	translate "github.com/jzs/translate-i18-go"
@@ -138,4 +139,38 @@ func BenchmarkTranslateOneWithTemplate(b *testing.B) {
 			b.Fatalf("Expected 1 apple, got '%v'", res)
 		}
 	}
+}
+
+func ExampleNew() {
+	file := `# English file
+title:
+  zero: No world
+  one: One world
+  many: Many worlds
+  other: Other world
+
+apple.count:
+  zero: No apples
+  one: 1 apple
+  few: "{{.Count}} apples"
+  many: "Many apples"
+  other: "{{.Fart}} other apples"
+`
+
+	// Create a new translator with loaded languages and translate.
+	enstream := bytes.NewReader([]byte(file))
+	en, err := translate.LoadYaml(enstream, "en-us")
+	if err != nil {
+		panic(err)
+	}
+	ts := translate.New(en)
+	fun := ts.Tfunc("en-us")
+	fmt.Println(fun("title"))
+
+	fmt.Println(fun("apple.count").Plural(0, 10))
+	fmt.Println(fun("apple.count").Plural(1, 10))
+	fmt.Println(fun("apple.count").Plural(5, 10))
+	fmt.Println(fun("apple.count").Plural(11, 10))
+	data := map[string]string{"Fart": "some"}
+	fmt.Println(fun("apple.count").With(data).Other())
 }
