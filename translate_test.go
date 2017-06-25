@@ -167,10 +167,10 @@ apple.count:
 	fun := ts.Tfunc("en-us")
 	fmt.Println(fun("title"))
 
-	fmt.Println(fun("apple.count").Plural(0, 10))
-	fmt.Println(fun("apple.count").Plural(1, 10))
-	fmt.Println(fun("apple.count").Plural(5, 10))
-	fmt.Println(fun("apple.count").Plural(11, 10))
+	fmt.Println(fun("apple.count").Plural(0, 10))  // Zero
+	fmt.Println(fun("apple.count").Plural(1, 10))  // One
+	fmt.Println(fun("apple.count").Plural(5, 10))  // Few
+	fmt.Println(fun("apple.count").Plural(11, 10)) // Many
 	data := map[string]string{"Fart": "some"}
-	fmt.Println(fun("apple.count").With(data).Other())
+	fmt.Println(fun("apple.count").With(data).Other()) // Other
 }
