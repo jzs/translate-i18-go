@@ -6,9 +6,7 @@ import (
 )
 
 // Errlog is an interface that one can embed to catch strings that is not translated. It could be helpful if you want to be notified about missing translations.
-type Errlog interface {
-	Errorf(f string, data ...interface{})
-}
+type Errlog func(f string, data ...interface{})
 
 // Language represents a language that has been loaded
 type Language struct {
@@ -109,12 +107,12 @@ func (t T) Plural(count, many uint64) T {
 func renderTranslation(val string, args interface{}, log Errlog) string {
 	tmpl, err := template.New("test").Parse(val)
 	if err != nil && log != nil {
-		log.Errorf("Failed parsing translation value: %v, reason: %v", val, err)
+		log("Failed parsing translation value: %v, reason: %v", val, err)
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, args)
 	if err != nil && log != nil {
-		log.Errorf("Failed executing template value: %v, reason: %v", val, err)
+		log("Failed executing template value: %v, reason: %v", val, err)
 	}
 	return buf.String()
 }
@@ -154,17 +152,19 @@ func (t *Translator) Tfunc(languages ...string) func(string) T {
 					return T{key: k, plural: pluralone, log: t.log} //initialized with default values
 				}
 				if t.log != nil {
-					t.log.Errorf("No translation match for key: %v in language %v, trying next language", s, l.ID)
+					t.log("No translation match for key: %v in language %v, trying next language", s, l.ID)
+					continue
 				}
 			} else {
 				if t.log != nil {
-					t.log.Errorf("Language %v does not exist", l.ID)
+					t.log("Language %v does not exist", l.ID)
+					continue
 				}
 			}
 		}
 
 		if t.log != nil {
-			t.log.Errorf("No translation match for key: %v in any of the languages given", s)
+			t.log("No translation match for key: %v in any of the languages given", s)
 		}
 		return newT(s)
 	}

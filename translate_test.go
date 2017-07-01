@@ -8,12 +8,10 @@ import (
 	translate "github.com/jzs/translate-i18-go"
 )
 
-type log struct {
-	t testing.TB
-}
-
-func (l log) Errorf(msg string, args ...interface{}) {
-	l.t.Errorf(msg, args...)
+func Log(t testing.TB) func(string, ...interface{}) {
+	return func(msg string, args ...interface{}) {
+		t.Errorf(msg, args...)
+	}
 }
 
 var enfile = `
@@ -42,8 +40,6 @@ title:
 `))
 
 func TestTranslatePlural(t *testing.T) {
-	l := log{t}
-
 	enstream := bytes.NewReader([]byte(enfile))
 
 	en, err := translate.LoadYaml(enstream, "en-us")
@@ -55,7 +51,7 @@ func TestTranslatePlural(t *testing.T) {
 		t.Fatalf("Expected successful load of yaml file, got: %v", err)
 	}
 	ts := translate.New(en, da)
-	ts.SetLog(l)
+	ts.SetLog(Log(t))
 	fun := ts.Tfunc("en-us")
 
 	res := fun("title").String()
@@ -82,7 +78,6 @@ func TestTranslatePlural(t *testing.T) {
 }
 
 func BenchmarkTranslatePlural(b *testing.B) {
-	l := log{b}
 	enstream := bytes.NewReader([]byte(enfile))
 	en, err := translate.LoadYaml(enstream, "en-us")
 	if err != nil {
@@ -90,7 +85,7 @@ func BenchmarkTranslatePlural(b *testing.B) {
 	}
 
 	ts := translate.New(en)
-	ts.SetLog(l)
+	ts.SetLog(Log(b))
 	fun := ts.Tfunc("en-us")
 
 	for n := 0; n < b.N; n++ {
@@ -102,7 +97,6 @@ func BenchmarkTranslatePlural(b *testing.B) {
 }
 
 func BenchmarkTranslateOne(b *testing.B) {
-	l := log{b}
 	enstream := bytes.NewReader([]byte(enfile))
 	en, err := translate.LoadYaml(enstream, "en-us")
 	if err != nil {
@@ -110,7 +104,7 @@ func BenchmarkTranslateOne(b *testing.B) {
 	}
 
 	ts := translate.New(en)
-	ts.SetLog(l)
+	ts.SetLog(Log(b))
 	fun := ts.Tfunc("en-us")
 
 	for n := 0; n < b.N; n++ {
@@ -122,7 +116,6 @@ func BenchmarkTranslateOne(b *testing.B) {
 }
 
 func BenchmarkTranslateOneWithTemplate(b *testing.B) {
-	l := log{b}
 	enstream := bytes.NewReader([]byte(enfile))
 	en, err := translate.LoadYaml(enstream, "en-us")
 	if err != nil {
@@ -130,7 +123,7 @@ func BenchmarkTranslateOneWithTemplate(b *testing.B) {
 	}
 
 	ts := translate.New(en)
-	ts.SetLog(l)
+	ts.SetLog(Log(b))
 	fun := ts.Tfunc("en-us")
 
 	for n := 0; n < b.N; n++ {
